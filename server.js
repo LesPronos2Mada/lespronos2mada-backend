@@ -12,9 +12,9 @@ app.use(express.json());
 const API_BASE = "https://v3.football.api-sports.io";
 const API_KEY = process.env.API_FOOTBALL_KEY;
 
-// ✅ Vérification clé
+// ✅ Vérifier que la clé est bien prise par Render
 app.get("/api/debug-key", (req, res) => {
-  res.json({ key: API_KEY || null });
+  res.json({ keyLoaded: API_KEY ? true : false });
 });
 
 // ✅ Santé du serveur
@@ -28,11 +28,11 @@ app.get("/api/leagues", (req, res) => {
     { id: 140, name: "LaLiga" },
     { id: 135, name: "Serie A" },
     { id: 78, name: "Bundesliga" },
-    { id: 2, name: "Ligue des Champions" }
+    { id: 667, name: "Ligue des Champions" } // ✅ LA BONNE LDC 2024/2025
   ]);
 });
 
-// ✅ Helper pour API-Football
+// ✅ Wrapper API-Football
 async function apiGet(path, params = {}) {
   const url = new URL(API_BASE + path);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
@@ -43,13 +43,13 @@ async function apiGet(path, params = {}) {
 
   if (!r.ok) {
     const text = await r.text();
-    throw new Error(`API error ${r.status} - ${text}`);
+    throw new Error(`API error ${r.status}: ${text}`);
   }
 
   return r.json();
 }
 
-// ✅ Fixtures (10 prochains matchs si aucun aujourd'hui)
+// ✅ Fixtures (10 prochains matchs)
 app.get("/api/fixtures", async (req, res) => {
   try {
     const { league } = req.query;
