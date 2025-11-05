@@ -40,12 +40,17 @@ app.get("/api/leagues", async (req, res) => {
 app.get("/api/fixtures", async (req, res) => {
   try {
     const { league } = req.query;
-    const d = new Date().toISOString().slice(0, 10);
     const season = new Date().getFullYear();
 
     if (!league) return res.status(400).json({ error: "league required" });
 
-    const j = await apiGet("/fixtures", { league, date: d, season });
+    // ✅ On prend les 10 prochains matchs, jamais vide
+    const j = await apiGet("/fixtures", {
+      league,
+      season,
+      next: 10
+    });
+
     const out = (j.response || []).map(m => ({
       id: m.fixture.id,
       date: m.fixture.date,
@@ -54,7 +59,8 @@ app.get("/api/fixtures", async (req, res) => {
     }));
 
     res.json(out);
-  } catch (e) {
+
+  } catch(e) {
     res.status(500).json({ error: e.message });
   }
 });
